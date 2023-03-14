@@ -1,4 +1,6 @@
 defmodule ECommersCa.Domain.Model.Client do
+  alias ECommersCa.Domain.Model.Invoice
+
   defstruct [
     :id,
     :doc_type,
@@ -12,7 +14,7 @@ defmodule ECommersCa.Domain.Model.Client do
   ]
 
   @type t() :: %__MODULE__{
-          id: number() | nil,
+          id: binary(),
           doc_type: String.t(),
           id_number: String.t(),
           first_name: String.t(),
@@ -20,49 +22,29 @@ defmodule ECommersCa.Domain.Model.Client do
           address: String.t(),
           phone: String.t(),
           email: String.t(),
-          invoices: [%ECommersCa.Domain.Model.Invoice{}]
+          
         }
 
   @spec new(
-          number() | nil,
+          binary(),
           String.t(),
           String.t(),
           String.t(),
           String.t(),
           String.t(),
           String.t(),
-          String.t(),
-          list()
+          String.t()
         ) ::
-          {:ok,
-           %__MODULE__{
-             id: number() | nil,
-             doc_type: String.t(),
-             id_number: String.t(),
-             first_name: String.t(),
-             last_name: String.t(),
-             address: String.t(),
-             phone: String.t(),
-             email: String.t(),
-             invoices: list(%ECommersCa.Domain.Model.Invoice{})
-           }}
-          | %{
-              id: nil,
-              doc_type: String.t(),
-              id_number: String.t(),
-              first_name: String.t(),
-              last_name: String.t(),
-              address: String.t(),
-              phone: String.t(),
-              email: String.t(),
-              invoices: list(%ECommersCa.Domain.Model.Invoice{})
-            }
-
+          {:ok, __MODULE__.t()} | {:error, :invalid_attrs}
   def new(id, doc_type, id_number, first_name, last_name, address, phone, email)
-      when is_nil(doc_type) or is_nil(id_number) or is_nil(first_name) or is_nil(last_name) or
+      when is_nil(id) or is_nil(doc_type) or is_nil(id_number) or is_nil(first_name) or is_nil(last_name) or
              is_nil(address) or is_nil(phone) or is_nil(email) do
     errors =
       %{
+        id:
+          if is_nil(id) do
+            "the id bynary is required"
+          end,
         doc_type:
           if is_nil(doc_type) do
             "The document type field is required"
@@ -93,6 +75,7 @@ defmodule ECommersCa.Domain.Model.Client do
           end
       }
       |> Enum.filter(fn {_key, value} -> value != nil end)
+    {:error, errors}
   end
 
   def new(id, doc_type, id_number, first_name, last_name, address, phone, email) do
@@ -105,8 +88,7 @@ defmodule ECommersCa.Domain.Model.Client do
        last_name: last_name,
        address: address,
        phone: phone,
-       email: email,
-       invoices: invoices
+       email: email
      }}
   end
 end

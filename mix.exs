@@ -31,6 +31,9 @@ defmodule ECommersCa.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:opentelemetry_ecto, "~> 1.0"},
+      {:postgrex, "~> 0.16"},
+      {:ecto_sql, "~> 3.9"},
       {:opentelemetry_plug, git: "https://github.com/juancgalvis/opentelemetry_plug.git", tag: "master"},
       {:opentelemetry_api, "~> 1.0"},
       {:opentelemetry_exporter, "~> 1.0"},

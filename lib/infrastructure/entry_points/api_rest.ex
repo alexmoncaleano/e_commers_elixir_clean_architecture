@@ -5,6 +5,13 @@ defmodule ECommersCa.Infrastructure.EntryPoint.ApiRest do
   """
   alias ECommersCa.Utils.DataTypeUtils
   alias ECommersCa.Infrastructure.EntryPoint.ErrorHandler
+  alias ECommersCa.Domain.UseCase.CreateProductUseCase
+  alias ECommersCa.Domain.UseCase.GetProductById
+  alias ECommersCa.Domain.UseCase.CreateClientUseCase
+  alias ECommersCa.Domain.UseCase.CreateInvoiceUseCase
+  alias ECommersCa.Domain.Model.Product
+
+
   require Logger
   use Plug.Router
   use Timex
@@ -28,23 +35,60 @@ defmodule ECommersCa.Infrastructure.EntryPoint.ApiRest do
     init_opts: PlugCheckup.Options.new(json_encoder: Jason, checks: ECommersCa.Infrastructure.EntryPoint.HealthCheck.checks)
   )
 
-  get "/e_commers_ca/api/hello/" do
-    build_response("Hello World", conn)
+  get "/e_commers_ca/api/product/:id" do
+    case GetProductById.get_by_id(id) do
+      {:ok, product} -> build_response(product, conn)
+    end
+  end
+
+  post "/e_commers_ca/api/product/" do
+    product_params = conn.body_params
+    case CreateProductUseCase.create(product_params) do
+      {:ok, product} -> build_response(product, conn)
+      {:error, error} -> %{status: 500, body: error} |> build_response(conn)
+    end
+  end
+
+  get "/e_commers_ca/api/client/:id" do
+    case GetClientById.get_by_id(id) do
+      {:ok, client} -> build_response(client, conn)
+    end
+  end
+
+  post "/e_commers_ca/api/client/" do
+    invoice_params = conn.body_params
+    case CreateInvoiceUseCase.create(invoice_params) do
+      {:ok, invoice} -> build_response(invoice, conn)
+      {:error, error} -> %{status: 500, body: error} |> build_response(conn)
+    end
+  end
+
+    post "/e_commers_ca/api/invoice/" do
+      client_params = conn.body_params
+      case CreateClientUseCase.create(client_params) do
+        {:ok, client} -> build_response(client, conn)
+        {:error, error} -> %{status: 500, body: error} |> build_response(conn)
+      end
   end
 
 
-  def build_response(%{status: status, body: body}, conn) do
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(status, Poison.encode!(body))
+  def build_response(response, conn) do
+    case response do
+      %{status: status, body: body} ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(status, Poison.encode!(body))
+      _ ->
+        build_response(%{status: 200, body: response}, conn)
+    end
   end
 
-  def build_response(response, conn), do: build_response(%{status: 200, body: response}, conn)
+  #def build_response(%{status: status, body: body}, conn) do
+  #  conn
+  #  |> put_resp_content_type("application/json")
+  #  |> send_resp(status, Poison.encode!(body))
+  #end
 
-  match _ do
-    conn
-    |> handle_not_found(Logger.level())
-  end
 
   defp handle_error(error, conn) do
     error

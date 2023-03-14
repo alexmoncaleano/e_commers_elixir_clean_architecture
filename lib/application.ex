@@ -16,6 +16,7 @@ defmodule ECommersCa.Application do
 
     CustomTelemetry.custom_telemetry_events()
     OpentelemetryPlug.setup()
+    OpentelemetryEcto.setup([:elixir, :repo])
     opts = [strategy: :one_for_one, name: ECommersCa.Supervisor]
     Supervisor.start_link(children, opts)
   end
@@ -39,6 +40,7 @@ defmodule ECommersCa.Application do
   end
 
   def env_children(_other_env) do
-    []
+    [
+			{ECommersCa.Infrastructure.Adapters.Repository.Repo, []},]
   end
 end

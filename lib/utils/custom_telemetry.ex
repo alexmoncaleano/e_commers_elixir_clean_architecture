@@ -37,8 +37,27 @@ defmodule ECommersCa.Utils.CustomTelemetry do
     :telemetry.execute([:elixir | metric], measures, metadata)
   end
 
-  def metrics do
+  # Ecto
+  def extract_metadata(%{source: source, result: {_, %{command: command}}}) do
+    %{source: source, command: command, service: @service_name}
+  end
+
+def metrics do
     [
+      #Ecto
+      counter("elixir.repo.query.count",
+        tag_values: &__MODULE__.extract_metadata/1,
+        tags: [:source, :command, :service]
+      ),
+      distribution("elixir.repo.query.total_time",
+        tag_values: &__MODULE__.extract_metadata/1,
+        unit: {:native, :millisecond},
+        tags: [:source, :command, :service],
+        reporter_options: [
+          buckets: [100, 200, 500]
+        ]
+      ),
+
       #Plug Metrics
       counter("elixir.http_request_duration_milliseconds.count", tags: [:request_path, :service]),
       sum("elixir.http_request_duration_milliseconds.duration", tags: [:request_path, :service]),

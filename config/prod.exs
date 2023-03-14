@@ -21,3 +21,11 @@ config :opentelemetry,
 config :opentelemetry_exporter,
   otlp_protocol: :http_protobuf,
   otlp_endpoint: "http://localhost:4318"
+
+config :e_commers_ca, ECommersCa.Infrastructure.Adapters.Repository.Repo,
+  database: "",
+  username: "",
+  password: "",
+  hostname: "",
+  pool_size: 10,
+  telemetry_prefix: [:elixir, :repo]
